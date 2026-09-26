@@ -58,8 +58,10 @@ pip install -r requirements.txt
 
 ### 2️⃣ Setting up the Environment Variables:
 
-There is a .env file inside the folder "Backend Chatbot Python"
-Open that file and add your Google Gemini API Key.
+Create a `.env` file inside the folder "Backend Chatbot Python" (you can copy `.env.example`):
+```bash
+GOOGLE_API_KEY="your-google-gemini-api-key"
+```
 
 ### 3️⃣ Run the Server
 

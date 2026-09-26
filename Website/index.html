@@ -5413,21 +5413,27 @@ career to the Cloud?<br>
 
     function toggleChatbot() {
         const container = document.getElementById("chatbot-container");
+        const widget = document.getElementById("chatbot-widget");
         const messages = document.getElementById("chatbot-messages");
 
         if (container.style.display === "none" || container.style.display === "") {
-            container.style.display = "block";
+            container.style.display = "flex";
+            container.style.flexDirection = "column";
+            if (widget) widget.style.display = "none";
+
+            // Focus the input when opening
+            setTimeout(() => {
+                const input = document.getElementById("chatbot-input");
+                if (input) input.focus();
+            }, 100);
 
             // Add the greeting message if it's the first time opening
             if (!messages.dataset.greeted) {
-                const botMessage = document.createElement("div");
-                botMessage.textContent = "Welcome, How can I help you today?";
-                botMessage.style = "align-self: flex-start; max-width: 80%; padding: 10px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); font-size: 14px;";
-                //messages.appendChild(botMessage);
-                messages.dataset.greeted = "true"; // Mark as greeted
+                messages.dataset.greeted = "true";
             }
         } else {
             container.style.display = "none";
+            if (widget) widget.style.display = "flex";
         }
     }
 
@@ -5435,33 +5441,54 @@ career to the Cloud?<br>
         const input = document.getElementById("chatbot-input");
         const messages = document.getElementById("chatbot-messages");
 
-        if (!input.value.trim()) return;
+        const question = input.value.trim();
+        if (!question) return;
+
+        // Clear input immediately for better UX
+        input.value = "";
 
         const userMessage = document.createElement("div");
-        userMessage.textContent = input.value;
-        userMessage.style = "align-self: flex-end; max-width: 80%; padding: 10px; background-color: #8b0000; color: white; border-radius: 10px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); font-size: 14px;";
+        userMessage.textContent = question;
+        userMessage.style = "align-self: flex-end; max-width: 80%; padding: 10px 14px; background-color: #8b0000; color: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); font-size: 14px; word-break: break-word; white-space: pre-line;";
         messages.appendChild(userMessage);
 
         const responseMessage = document.createElement("div");
         responseMessage.textContent = "Fetching data...";
-        responseMessage.style = "align-self: flex-start; max-width: 80%; padding: 10px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); font-size: 14px;";
+        responseMessage.style = "align-self: flex-start; max-width: 85%; padding: 10px 14px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); font-size: 14px; word-break: break-word; white-space: pre-line; line-height: 1.4;";
         messages.appendChild(responseMessage);
+        messages.scrollTop = messages.scrollHeight;
 
         try {
             const response = await fetch(chatbotUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question: input.value }),
+                body: JSON.stringify({ question: question }),
             });
             const data = await response.json();
-            responseMessage.textContent = data.answer;
+            if (response.ok && data.answer) {
+                responseMessage.textContent = data.answer;
+            } else {
+                responseMessage.textContent = data.error || "Sorry, I couldn't find an answer to that.";
+            }
         } catch (error) {
-            responseMessage.textContent = "Sorry, there was an error.";
+            responseMessage.textContent = "Unable to connect to backend server. Please make sure the server is running on port 8000.";
         }
 
-        input.value = "";
         messages.scrollTop = messages.scrollHeight;
     }
+
+    // Support sending messages with Enter key
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.getElementById("chatbot-input");
+        if (input) {
+            input.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+    });
 </script>
 
 
